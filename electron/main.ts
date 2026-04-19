@@ -4,7 +4,12 @@ import * as dotenv from "dotenv";
 
 dotenv.config();
 
-import "./server";
+import { app as expressApp } from "./server";
+
+const expressPort = Number(process.env.EXPRESS_PORT) || 3001;
+expressApp.listen(expressPort, () => {
+  console.log(`Express server listening on http://localhost:${expressPort}`);
+});
 
 const isDev = !app.isPackaged;
 
