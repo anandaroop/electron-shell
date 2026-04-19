@@ -8,7 +8,9 @@
     "package": "electron-builder",
     "dist": "npm run build && npm run package",
     "start": "electron .",
-    "typecheck": "tsc --noEmit && tsc -p tsconfig.electron.json --noEmit"
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.electron.json --noEmit",
+    "lint": "eslint src electron vite.config.ts",
+    "format": "prettier --write src electron vite.config.ts index.html"
   },
   "build": {
     "appId": "com.electr.app",
@@ -29,6 +31,7 @@
     "express": "^4.18.2"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.4",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^25.6.0",
@@ -38,9 +41,15 @@
     "concurrently": "^8.2.2",
     "electron": "^29.0.0",
     "electron-builder": "^24.13.3",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "prettier": "^3.8.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "typescript": "^6.0.3",
+    "typescript-eslint": "^8.58.2",
     "vite": "^5.0.0",
     "wait-on": "^7.2.0"
   }

@@ -44,9 +44,7 @@ export default function App() {
         </pre>
       )}
 
-      {error && (
-        <p style={{ color: 'red', marginTop: '1rem' }}>Error: {error}</p>
-      )}
+      {error && <p style={{ color: 'red', marginTop: '1rem' }}>Error: {error}</p>}
     </div>
   );
 }
