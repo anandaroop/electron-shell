@@ -36,6 +36,8 @@ npm run package    # Package Electron app → release/ (requires out/ and dist/)
 npm run dist       # build + package in one shot
 npm start          # Launch Electron against existing out/ and dist/ (no packaging)
 npm run typecheck  # Type-check renderer and main process without emitting
+npm run lint       # ESLint across src/ and electron/
+npm run format     # Prettier across src/, electron/, and index.html
 ```
 
 ## Development
@@ -53,6 +55,20 @@ If you change files in `electron/`, restart `npm run dev` — the main process d
 
 - Conventional Commits
 - TypeScript strict mode
+- ESLint + Prettier (enforced in CI via lint-staged pre-commit hook)
+
+## Code quality
+
+Linting and formatting are enforced at commit time via [Husky](https://typicode.github.io/husky/) + [lint-staged](https://github.com/lint-staged/lint-staged): staged `.ts`/`.tsx` files are auto-fixed by ESLint and formatted by Prettier before every commit.
+
+To run manually:
+
+```bash
+npm run lint      # ESLint across src/ and electron/
+npm run format    # Prettier across src/, electron/, and index.html
+```
+
+**VS Code**: install the recommended extensions (`esbenp.prettier-vscode`, `dbaeumer.vscode-eslint`) and files will be formatted on save automatically.
 
 ## Building a distributable
 
@@ -76,7 +92,7 @@ Re-run `npm run dist` whenever you want a fresh build. Each run overwrites the p
 Edit [electron/server.ts](electron/server.ts). Example:
 
 ```ts
-app.get("/ping", (_req: Request, res: Response) => {
+app.get('/ping', (_req: Request, res: Response) => {
   res.json({ ok: true });
 });
 ```
@@ -84,7 +100,7 @@ app.get("/ping", (_req: Request, res: Response) => {
 Then call it from React:
 
 ```ts
-const data = await fetch("http://localhost:3001/ping").then((r) => r.json());
+const data = await fetch('http://localhost:3001/ping').then((r) => r.json());
 ```
 
 ## Project structure
