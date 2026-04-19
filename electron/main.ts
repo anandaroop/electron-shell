@@ -1,5 +1,8 @@
 import { app, BrowserWindow } from "electron";
 import path from "path";
+import * as dotenv from "dotenv";
+
+dotenv.config();
 
 import "./server";
 

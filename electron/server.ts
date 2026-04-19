@@ -10,6 +10,8 @@ app.get("/hello", (_req: Request, res: Response) => {
   res.json({ message: "Hello from Express!" });
 });
 
-app.listen(3001, () => {
-  console.log("Express server listening on http://localhost:3001");
+const port = Number(process.env.EXPRESS_PORT) || 3001;
+
+app.listen(port, () => {
+  console.log(`Express server listening on http://localhost:${port}`);
 });
