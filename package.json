@@ -5,7 +5,23 @@
   "scripts": {
     "dev": "concurrently -k \"vite\" \"wait-on http://localhost:5173 && electron .\"",
     "build": "vite build",
+    "package": "electron-builder",
+    "dist": "npm run build && npm run package",
     "start": "electron ."
+  },
+  "build": {
+    "appId": "com.electr.app",
+    "productName": "Electr",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "electron/**",
+      "dist/**"
+    ],
+    "mac": {
+      "target": "dmg"
+    }
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -18,6 +34,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "vite": "^5.0.0",
+    "electron-builder": "^24.13.3",
     "wait-on": "^7.2.0"
   }
 }
