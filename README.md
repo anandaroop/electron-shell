@@ -2,6 +2,15 @@
 
 Walking skeleton for an Electron app with an embedded Express server and a React UI.
 
+## Using this as a template
+
+```bash
+gh repo create my-new-app --template anandaroop/electron-shell --clone
+cd my-new-app
+npm install
+npm run dev
+```
+
 ## Stack
 
 | Layer     | Technology                                                                  |
