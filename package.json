@@ -1,5 +1,5 @@
 {
-  "name": "electr",
+  "name": "electron-shell",
   "version": "0.1.0",
   "main": "out/main.js",
   "scripts": {
@@ -23,8 +23,8 @@
     "*.{html,json,md}": "prettier --write"
   },
   "build": {
-    "appId": "com.electr.app",
-    "productName": "Electr",
+    "appId": "com.electronshell.app",
+    "productName": "ElectronShell",
     "directories": {
       "output": "release"
     },

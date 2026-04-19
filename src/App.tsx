@@ -27,7 +27,7 @@ export default function App() {
 
   return (
     <div style={{ fontFamily: "sans-serif", padding: "2rem", maxWidth: 600 }}>
-      <h1>Electr</h1>
+      <h1>ElectronShell</h1>
       <p style={{ color: "#666" }}>React renderer talking to an embedded Express server.</p>
 
       <button

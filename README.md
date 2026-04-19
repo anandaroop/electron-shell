@@ -1,4 +1,4 @@
-# Electr
+# ElectronShell
 
 Walking skeleton for an Electron app with an embedded Express server and a React UI.
 
@@ -93,9 +93,9 @@ Output:
 
 ```
 release/
-├── Electr-x.x.x-arm64.dmg   # Installer — drag to /Applications
+├── ElectronShell-x.x.x-arm64.dmg   # Installer — drag to /Applications
 └── mac-arm64/
-    └── Electr.app            # Portable app — runs directly
+    └── ElectronShell.app            # Portable app — runs directly
 ```
 
 Re-run `npm run dist` whenever you want a fresh build. Each run overwrites the previous `release/` output.
@@ -119,7 +119,7 @@ const data = await fetch('http://localhost:3001/ping').then((r) => r.json());
 ## Project structure
 
 ```
-electr/
+electron-shell/
 ├── electron/
 │   ├── main.ts            Electron entry — opens window, starts Express
 │   ├── server.ts          Express app (exported without auto-listen)
