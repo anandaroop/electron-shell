@@ -1,6 +1,6 @@
 # ElectronShell
 
-Walking skeleton for an Electron app with an embedded Express server and a React UI.
+Walking skeleton for an Electron app with an embedded Express server, a React UI, and a Claude Agent SDK integration.
 
 ## Using this as a template
 
@@ -13,14 +13,15 @@ npm run dev
 
 ## Stack
 
-| Layer     | Technology                                                                  |
-| --------- | --------------------------------------------------------------------------- |
-| Shell     | [Electron](https://www.electronjs.org/) 29                                  |
-| Backend   | [Express](https://expressjs.com/) 4 (runs inside the Electron main process) |
-| Frontend  | [React](https://react.dev/) 18, bundled by [Vite](https://vitejs.dev/) 5    |
-| UI        | [Radix UI Themes](https://www.radix-ui.com/themes) 3                        |
-| Language  | [TypeScript](https://www.typescriptlang.org/) 6                             |
-| Packaging | [electron-builder](https://www.electron.build/) 24                          |
+| Layer     | Technology                                                                                          |
+| --------- | --------------------------------------------------------------------------------------------------- |
+| Shell     | [Electron](https://www.electronjs.org/) 29                                                          |
+| Backend   | [Express](https://expressjs.com/) 4 (runs inside the Electron main process)                         |
+| AI        | [Claude Agent SDK](https://www.npmjs.com/package/@anthropic-ai/claude-agent-sdk) (streamed via SSE) |
+| Frontend  | [React](https://react.dev/) 18, bundled by [Vite](https://vitejs.dev/) 5                            |
+| UI        | [Radix UI Themes](https://www.radix-ui.com/themes) 3                                                |
+| Language  | [TypeScript](https://www.typescriptlang.org/) 6                                                     |
+| Packaging | [electron-builder](https://www.electron.build/) 24                                                  |
 
 ## Architecture
 
@@ -34,6 +35,8 @@ React renderer (src/)
 ```
 
 The Express server starts inside the main process before the window opens. The React app communicates with it over localhost — no IPC required for basic API calls.
+
+The Claude Agent SDK runs inside the Express server and streams results to the React frontend via [Server-Sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) (SSE). Because the SDK's native modules are excluded from Electron's `app.asar` archive, a `resolveUnpacked` helper in `server.ts` redirects the import path to `app.asar.unpacked/` at runtime.
 
 TypeScript is compiled separately for each layer: Vite handles the renderer (`src/`), and `tsc` compiles the main process (`electron/`) to `out/` before Electron runs it.
 
@@ -109,6 +112,10 @@ release/
 ```
 
 Re-run `npm run dist` whenever you want a fresh build. Each run overwrites the previous `release/` output.
+
+## Using the Claude Agent SDK
+
+TK
 
 ## Adding API endpoints
 
