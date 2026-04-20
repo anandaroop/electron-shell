@@ -8,6 +8,9 @@ if (app.isPackaged) {
   dotenv.config();
 }
 
+// Prevent the spawned claude binary from scanning ~ and triggering TCC prompts
+process.chdir(app.getPath("userData"));
+
 import { app as expressApp } from "./server.js";
 
 const expressPort = Number(process.env.EXPRESS_PORT) || 3001;
