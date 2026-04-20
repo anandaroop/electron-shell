@@ -2,7 +2,11 @@ import { app, BrowserWindow } from "electron";
 import path from "path";
 import * as dotenv from "dotenv";
 
-dotenv.config();
+if (app.isPackaged) {
+  dotenv.config({ path: path.join(process.resourcesPath, ".env") });
+} else {
+  dotenv.config();
+}
 
 import { app as expressApp } from "./server.js";
 
