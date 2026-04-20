@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState } from "react";
 
-const API = 'http://localhost:3001';
+const API = "http://localhost:3001";
 
 interface HelloResponse {
   message: string;
@@ -26,25 +26,25 @@ export default function App() {
   }
 
   return (
-    <div style={{ fontFamily: 'sans-serif', padding: '2rem', maxWidth: 600 }}>
+    <div style={{ fontFamily: "sans-serif", padding: "2rem", maxWidth: 600 }}>
       <h1>Electr</h1>
-      <p style={{ color: '#666' }}>React renderer talking to an embedded Express server.</p>
+      <p style={{ color: "#666" }}>React renderer talking to an embedded Express server.</p>
 
       <button
         onClick={ping}
         disabled={loading}
-        style={{ padding: '0.5rem 1.25rem', fontSize: '1rem', cursor: 'pointer' }}
+        style={{ padding: "0.5rem 1.25rem", fontSize: "1rem", cursor: "pointer" }}
       >
-        {loading ? 'Pinging…' : 'Ping /hello'}
+        {loading ? "Pinging…" : "Ping /hello"}
       </button>
 
       {response && (
-        <pre style={{ marginTop: '1rem', background: '#f0f0f0', padding: '1rem', borderRadius: 4 }}>
+        <pre style={{ marginTop: "1rem", background: "#f0f0f0", padding: "1rem", borderRadius: 4 }}>
           {JSON.stringify(response, null, 2)}
         </pre>
       )}
 
-      {error && <p style={{ color: 'red', marginTop: '1rem' }}>Error: {error}</p>}
+      {error && <p style={{ color: "red", marginTop: "1rem" }}>Error: {error}</p>}
     </div>
   );
 }

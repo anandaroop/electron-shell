@@ -1,7 +1,7 @@
-import { app, BrowserWindow } from 'electron';
-import path from 'path';
+import { app, BrowserWindow } from "electron";
+import path from "path";
 
-import './server';
+import "./server";
 
 const isDev = !app.isPackaged;
 
@@ -15,19 +15,19 @@ function createWindow(): void {
   });
 
   if (isDev) {
-    win.loadURL('http://localhost:5173');
+    win.loadURL("http://localhost:5173");
     win.webContents.openDevTools();
   } else {
-    win.loadFile(path.join(__dirname, '../dist/index.html'));
+    win.loadFile(path.join(__dirname, "../dist/index.html"));
   }
 }
 
 app.whenReady().then(createWindow);
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") app.quit();
 });
 
-app.on('activate', () => {
+app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });

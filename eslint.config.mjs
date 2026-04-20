@@ -15,9 +15,10 @@ export default tseslint.config(
     },
     settings: { react: { version: 'detect' } },
     rules: {
-      'react/react-in-jsx-scope': 'off',
-      'react-hooks/rules-of-hooks': 'error',
-      'react-hooks/exhaustive-deps': 'warn',
+      "react/react-in-jsx-scope": "off",
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
+      "react/jsx-curly-brace-presence": ["warn", { props: "never", children: "never" }],
     },
   },
   prettier,
