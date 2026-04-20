@@ -18,6 +18,7 @@ npm run dev
 | Shell     | [Electron](https://www.electronjs.org/) 29                                  |
 | Backend   | [Express](https://expressjs.com/) 4 (runs inside the Electron main process) |
 | Frontend  | [React](https://react.dev/) 18, bundled by [Vite](https://vitejs.dev/) 5    |
+| UI        | [Radix UI Themes](https://www.radix-ui.com/themes) 3                        |
 | Language  | [TypeScript](https://www.typescriptlang.org/) 6                             |
 | Packaging | [electron-builder](https://www.electron.build/) 24                          |
 
@@ -114,7 +115,7 @@ Re-run `npm run dist` whenever you want a fresh build. Each run overwrites the p
 Edit [electron/server.ts](electron/server.ts). Example:
 
 ```ts
-app.get('/ping', (_req: Request, res: Response) => {
+app.get("/ping", (_req: Request, res: Response) => {
   res.json({ ok: true });
 });
 ```
@@ -122,7 +123,7 @@ app.get('/ping', (_req: Request, res: Response) => {
 Then call it from React:
 
 ```ts
-const data = await fetch('http://localhost:3001/ping').then((r) => r.json());
+const data = await fetch("http://localhost:3001/ping").then((r) => r.json());
 ```
 
 ## Project structure
