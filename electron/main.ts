@@ -4,7 +4,7 @@ import * as dotenv from "dotenv";
 
 dotenv.config();
 
-import { app as expressApp } from "./server";
+import { app as expressApp } from "./server.js";
 
 const expressPort = Number(process.env.EXPRESS_PORT) || 3001;
 expressApp.listen(expressPort, () => {

@@ -37,6 +37,7 @@
     }
   },
   "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.2.114",
     "@radix-ui/themes": "^3.3.0",
     "cors": "^2.8.5",
     "dotenv": "^17.4.2",
