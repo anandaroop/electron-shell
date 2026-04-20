@@ -1,3 +1,4 @@
+import { Box, Button, Flex, Grid, Skeleton } from "@radix-ui/themes";
 import { useState } from "react";
 
 const API = import.meta.env.VITE_API_URL as string;
@@ -13,38 +14,51 @@ export default function App() {
 
   async function ping() {
     setLoading(true);
+    setResponse(null);
     setError(null);
     try {
       const res = await fetch(`${API}/hello`);
       const data: HelloResponse = await res.json();
-      setResponse(data);
+      setTimeout(() => {
+        setResponse(data);
+        setLoading(false);
+      }, 1000);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
-    } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div style={{ fontFamily: "sans-serif", padding: "2rem", maxWidth: 600 }}>
-      <h1>ElectronShell</h1>
-      <p style={{ color: "#666" }}>React renderer talking to an embedded Express server.</p>
+    <Box height="100vh" overflow="hidden" p="6">
+      <Grid columns="2" gap="6" width="auto" height="100%">
+        {/* left column */}
 
-      <button
-        onClick={ping}
-        disabled={loading}
-        style={{ padding: "0.5rem 1.25rem", fontSize: "1rem", cursor: "pointer" }}
-      >
-        {loading ? "Pinging…" : "Ping /hello"}
-      </button>
+        <Flex direction="column" gap="5">
+          <Button
+            onClick={ping}
+            disabled={loading}
+            style={{ padding: "0.5rem 1.25rem", fontSize: "1rem", cursor: "pointer" }}
+          >
+            {loading ? "Submitting…" : "Submit"}
+          </Button>
+        </Flex>
 
-      {response && (
-        <pre style={{ marginTop: "1rem", background: "#f0f0f0", padding: "1rem", borderRadius: 4 }}>
-          {JSON.stringify(response, null, 2)}
-        </pre>
-      )}
+        {/* right column */}
 
-      {error && <p style={{ color: "red", marginTop: "1rem" }}>Error: {error}</p>}
-    </div>
+        <Flex direction="column" gap="5" height="100%">
+          {loading ? (
+            <Skeleton>
+              <Box height="100px" />
+            </Skeleton>
+          ) : (
+            <>
+              {response && <pre>{JSON.stringify(response, null, 2)}</pre>}
+              {error && <p style={{ color: "red", marginTop: "1rem" }}>Error: {error}</p>}
+            </>
+          )}
+        </Flex>
+      </Grid>
+    </Box>
   );
 }
