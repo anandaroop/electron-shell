@@ -25,7 +25,7 @@
   },
   "build": {
     "appId": "com.electronshell.app",
-    "productName": "ElectronShell",
+    "productName": "ElectronShell — Demo App",
     "directories": {
       "output": "release"
     },
@@ -45,7 +45,8 @@
       "node_modules/@anthropic-ai/claude-agent-sdk-darwin-arm64/**"
     ],
     "mac": {
-      "target": "dmg"
+      "target": "dmg",
+      "icon": "build/icon.icns"
     }
   },
   "dependencies": {
