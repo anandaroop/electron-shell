@@ -21,6 +21,8 @@ export default function App() {
   }, [events]);
 
   async function fetchGeneration() {
+    setEvents([]);
+    setStructuredOutput(null);
     setIsLoading(true);
     try {
       const res = await fetch(`${API}/generate`, {
