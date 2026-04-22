@@ -6,13 +6,13 @@ const API = import.meta.env.VITE_API_URL as string;
 
 export default function App() {
   const [events, setEvents] = useState<SseEvent[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  async function ping() {
-    setLoading(true);
+  async function fetchGeneration() {
+    setIsLoading(true);
     setEvents([]);
     try {
-      const res = await fetch(`${API}/bio`, {
+      const res = await fetch(`${API}/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
@@ -25,7 +25,6 @@ export default function App() {
         for (const line of decoder.decode(value).split("\n")) {
           if (line.startsWith("data: ")) {
             const event = JSON.parse(line.slice(6)) as SseEvent;
-            console.log("Received event:", event);
             setEvents((prev) => [...prev, event]);
           }
         }
@@ -34,7 +33,7 @@ export default function App() {
       const message = err instanceof Error ? err.message : String(err);
       setEvents((prev) => [...prev, { type: "error", message }]);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   }
 
@@ -45,17 +44,17 @@ export default function App() {
 
         <Flex direction="column" gap="5">
           <Button
-            onClick={ping}
-            disabled={loading}
+            onClick={fetchGeneration}
+            disabled={isLoading}
             style={{ padding: "0.5rem 1.25rem", fontSize: "1rem", cursor: "pointer" }}
           >
-            {loading ? (
+            {isLoading ? (
               <>
                 <Spinner />
                 Processing…
               </>
             ) : (
-              <>Submit</>
+              "Submit"
             )}
           </Button>
         </Flex>
@@ -63,12 +62,12 @@ export default function App() {
         {/* right column */}
 
         <Flex direction="column" gap="5" height="100%" overflow="scroll">
-          {loading && events.length === 0 ? (
+          {isLoading && events.length === 0 ? (
             <Skeleton>
               <Box height="100px" />
             </Skeleton>
           ) : (
-            events.map((event, i) => <SseEventView key={i} event={event} />)
+            events.map((event, i) => <EventView key={i} event={event} />)
           )}
         </Flex>
       </Grid>
@@ -76,7 +75,7 @@ export default function App() {
   );
 }
 
-function SseEventView({ event }: { event: SseEvent }) {
+function EventView({ event }: { event: SseEvent }) {
   if (event.type === "start") return null;
 
   if (event.type === "thinking")
@@ -96,7 +95,7 @@ function SseEventView({ event }: { event: SseEvent }) {
         style={{ opacity: 0.6, fontFamily: "monospace", fontSize: "0.85rem" }}
       >
         <Text>⚙ {event.name}</Text>
-        <ToolDetail name={event.name} input={event.input} />
+        <ToolCallDetail name={event.name} input={event.input as Record<string, unknown>} />
       </Flex>
     );
 
@@ -110,19 +109,17 @@ function SseEventView({ event }: { event: SseEvent }) {
   if (event.type === "error") return <Text style={{ color: "red" }}>Error: {event.message}</Text>;
 }
 
-function ToolDetail({ name, input }: { name: string; input: unknown }) {
-  const i = input as Record<string, unknown>;
+function ToolCallDetail({ name, input }: { name: string; input: Record<string, unknown> }) {
+  if (name === "WebFetch" && typeof input.url === "string")
+    return <Text style={{ paddingLeft: "1rem", opacity: 0.8 }}>{input.url}</Text>;
 
-  if (name === "WebFetch" && typeof i.url === "string")
-    return <Text style={{ paddingLeft: "1rem", opacity: 0.8 }}>{i.url}</Text>;
+  if (name === "Skill" && typeof input.skill === "string")
+    return <Text style={{ paddingLeft: "1rem", opacity: 0.8 }}>{input.skill}</Text>;
 
-  if (name === "Skill" && typeof i.skill === "string")
-    return <Text style={{ paddingLeft: "1rem", opacity: 0.8 }}>{i.skill}</Text>;
-
-  if (name === "TodoWrite" && Array.isArray(i.todos))
+  if (name === "TodoWrite" && Array.isArray(input.todos))
     return (
       <Flex direction="column" style={{ paddingLeft: "1rem" }}>
-        {(i.todos as Array<{ content: string; status?: string }>).map((todo, idx) => (
+        {(input.todos as Array<{ content: string; status?: string }>).map((todo, idx) => (
           <Text key={idx}>
             {todo.status === "completed" ? "✓" : "·"} {todo.content}
           </Text>

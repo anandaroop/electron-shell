@@ -18,14 +18,14 @@ export const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.post("/bio", async (_req: Request, res: Response) => {
+app.post("/generate", async (_req: Request, res: Response) => {
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
   res.flushHeaders();
 
-  console.log("Starting /bio request");
-  sendSseEvent({ type: "start", endpoint: "bio" }, res);
+  console.log("Starting /generate request");
+  sendSseEvent({ type: "start", endpoint: "generate" }, res);
 
   const query = await getQueryFn();
 
