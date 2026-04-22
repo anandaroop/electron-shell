@@ -1,17 +1,16 @@
 import { Box, Button, Flex, Grid, Skeleton, Spinner, Text } from "@radix-ui/themes";
 import { useState } from "react";
+import type { SseEvent } from "../types";
 
 const API = import.meta.env.VITE_API_URL as string;
 
 export default function App() {
-  const [text, setText] = useState<string | null>(null);
+  const [events, setEvents] = useState<SseEvent[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   async function ping() {
     setLoading(true);
-    setText(null);
-    setError(null);
+    setEvents([]);
     try {
       const res = await fetch(`${API}/bio`, {
         method: "POST",
@@ -25,21 +24,15 @@ export default function App() {
 
         for (const line of decoder.decode(value).split("\n")) {
           if (line.startsWith("data: ")) {
-            const chunk = JSON.parse(line.slice(6));
-            console.log("Receieved event: ", chunk);
-            if (chunk.type === "text") {
-              setText((prev) => (prev ?? "") + "\n\n" + chunk.text);
-            }
-            if (chunk.type === "tool") {
-              const label =
-                chunk.name === "WebFetch" && chunk.url ? `WebFetch: ${chunk.url}` : chunk.name;
-              setText((prev) => (prev ?? "") + "\n\n" + label);
-            }
+            const event = JSON.parse(line.slice(6)) as SseEvent;
+            console.log("Received event:", event);
+            setEvents((prev) => [...prev, event]);
           }
         }
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      const message = err instanceof Error ? err.message : String(err);
+      setEvents((prev) => [...prev, { type: "error", message }]);
     } finally {
       setLoading(false);
     }
@@ -70,18 +63,79 @@ export default function App() {
         {/* right column */}
 
         <Flex direction="column" gap="5" height="100%" overflow="scroll">
-          {loading && !text ? (
+          {loading && events.length === 0 ? (
             <Skeleton>
               <Box height="100px" />
             </Skeleton>
           ) : (
-            <>
-              {text && <Text style={{ whiteSpace: "pre-wrap" }}>{text}</Text>}
-              {error && <p style={{ color: "red", marginTop: "1rem" }}>Error: {error}</p>}
-            </>
+            events.map((event, i) => <SseEventView key={i} event={event} />)
           )}
         </Flex>
       </Grid>
     </Box>
   );
+}
+
+function SseEventView({ event }: { event: SseEvent }) {
+  if (event.type === "start") return null;
+
+  if (event.type === "thinking")
+    return (
+      <Text style={{ whiteSpace: "pre-wrap", opacity: 0.5, fontStyle: "italic" }}>
+        {event.text}
+      </Text>
+    );
+
+  if (event.type === "text") return <Text style={{ whiteSpace: "pre-wrap" }}>{event.text}</Text>;
+
+  if (event.type === "tool_use")
+    return (
+      <Flex
+        direction="column"
+        gap="1"
+        style={{ opacity: 0.6, fontFamily: "monospace", fontSize: "0.85rem" }}
+      >
+        <Text>⚙ {event.name}</Text>
+        <ToolDetail name={event.name} input={event.input} />
+      </Flex>
+    );
+
+  if (event.type === "done")
+    return (
+      <Text size="1" color="indigo">
+        {((event.duration_ms ?? 0) / 1000).toFixed(1)}s · ${(event.total_cost_usd ?? 0).toFixed(4)}
+      </Text>
+    );
+
+  if (event.type === "error") return <Text style={{ color: "red" }}>Error: {event.message}</Text>;
+}
+
+function ToolDetail({ name, input }: { name: string; input: unknown }) {
+  const i = input as Record<string, unknown>;
+
+  if (name === "WebFetch" && typeof i.url === "string")
+    return <Text style={{ paddingLeft: "1rem", opacity: 0.8 }}>{i.url}</Text>;
+
+  if (name === "Skill" && typeof i.skill === "string")
+    return <Text style={{ paddingLeft: "1rem", opacity: 0.8 }}>{i.skill}</Text>;
+
+  if (name === "TodoWrite" && Array.isArray(i.todos))
+    return (
+      <Flex direction="column" style={{ paddingLeft: "1rem" }}>
+        {(i.todos as Array<{ content: string; status?: string }>).map((todo, idx) => (
+          <Text key={idx}>
+            {todo.status === "completed" ? "✓" : "·"} {todo.content}
+          </Text>
+        ))}
+      </Flex>
+    );
+
+  if (name === "StructuredOutput")
+    return (
+      <Text style={{ paddingLeft: "1rem", opacity: 0.8 }}>
+        {JSON.stringify(input).slice(0, 1000)}…
+      </Text>
+    );
+
+  return null;
 }
