@@ -1,100 +1,101 @@
 # ElectronShell
 
-Walking skeleton for an Electron app with an embedded Express server, a React UI, and a Claude Agent SDK integration.
+A template for building Claude Agent SDK apps that can be packaged and distributed as desktop apps.
 
-## Using this as a template
+<img width="5120" height="2880" alt="desktop3" src="https://github.com/user-attachments/assets/8ef7932d-2d2e-4a3d-9c01-123b0facde7c" />
 
-```bash
-gh repo create my-new-app --template anandaroop/electron-shell --clone
-cd my-new-app
-npm install
-npm run dev
-```
+_Example app developed with this — see [artist-bio](https://github.com/anandaroop/electron-shell/tree/artist-bio) branch._
 
-## Stack
+This is meant to provide a low-stakes, low-effort way to get modest agentic apps into the hands of colleagues, without the burden of deployment, monitoring etc. Those strengths are also its weaknesses. This is not a solution for critical work, but may be handy for prototyping agentic workflows.
 
-| Layer     | Technology                                                                                          |
-| --------- | --------------------------------------------------------------------------------------------------- |
-| Shell     | [Electron](https://www.electronjs.org/) 29                                                          |
-| Backend   | [Express](https://expressjs.com/) 4 (runs inside the Electron main process)                         |
-| AI        | [Claude Agent SDK](https://www.npmjs.com/package/@anthropic-ai/claude-agent-sdk) (streamed via SSE) |
-| Frontend  | [React](https://react.dev/) 18, bundled by [Vite](https://vitejs.dev/) 5                            |
-| UI        | [Radix UI Themes](https://www.radix-ui.com/themes) 3                                                |
-| Language  | [TypeScript](https://www.typescriptlang.org/) 6                                                     |
-| Packaging | [electron-builder](https://www.electron.build/) 24                                                  |
+Observability is absent for now, but the project is already prepped for Laminar observability, which can be enabled via env vars.
 
-## Architecture
+The annoying boilerplate is basically done, so that what remains for the developer is a handful of customization points:
 
-```
-Electron main process
-├── electron/server.ts   Express server on :3001
-└── electron/main.ts     BrowserWindow → React UI
-
-React renderer (src/)
-└── fetches http://localhost:3001/*
-```
-
-The Express server starts inside the main process before the window opens. The React app communicates with it over localhost — no IPC required for basic API calls.
-
-The Claude Agent SDK runs inside the Express server and streams results to the React frontend via [Server-Sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) (SSE). Because the SDK's native modules are excluded from Electron's `app.asar` archive, a `resolveUnpacked` helper in `server.ts` redirects the import path to `app.asar.unpacked/` at runtime.
-
-TypeScript is compiled separately for each layer: Vite handles the renderer (`src/`), and `tsc` compiles the main process (`electron/`) to `out/` before Electron runs it.
+- **Instructions**: Update the system prompt in `src/prompt.ts`
+- **Output schema**: Update the JSON schema for the desired final structured output in `src/schema.ts`
+- **Skills**: Add any needed agent skills under `.claude/skills/` — the Claude Agent SDK will have access to them
+- **Query**: Update the query call to Claude Agent SDK in `src/backend/server.ts` to re/configure all of the above
+- **UI**: Modify the UI to suit your required inputs and outputs at `src/frontend/App.tsx`
 
 ## Commands
 
 ```bash
-npm run dev        # Compile main process TS, then start Vite dev server + Electron
-npm run build      # Compile main process TS + bundle React → out/ and dist/
-npm run package    # Package Electron app → release/ (requires out/ and dist/)
-npm run dist       # build + package in one shot
-npm start          # Launch Electron against existing out/ and dist/ (no packaging)
-npm run typecheck  # Type-check renderer and main process without emitting
-npm run lint       # ESLint across src/ and electron/
-npm run format     # Prettier across src/, electron/, and index.html
-npm test           # Run all tests once (Vitest)
-npm run test:watch # Run tests in watch mode
+npm run dev          # Start dev mode: compiles main process + Vite HMR + Electron
+npm run build        # Compile main process (tsc) + bundle renderer (vite)
+npm run dist         # build + package into release/
+npm run typecheck    # Type-check both renderer and main process without emitting
+npm run lint         # ESLint across src/frontend, src/backend, vite.config.ts
+npm run format       # Prettier across src/
+npm test             # Run all Vitest tests once
+npm run test:watch   # Run tests in watch mode
 ```
 
-## Development
+## Stack
 
-```bash
-npm install
-npm run dev
-```
+- [Electron](https://www.electronjs.org/) (shell)
+- [Express](https://expressjs.com/) (runs inside the Electron main process)
+- [Claude Agent SDK](https://www.npmjs.com/package/@anthropic-ai/claude-agent-sdk) (streamed via SSE)
+- [React](https://react.dev/), bundled by [Vite](https://vitejs.dev/)
+- [Radix UI Themes](https://www.radix-ui.com/themes)
+- [TypeScript](https://www.typescriptlang.org/)
+- [electron-builder](https://www.electron.build/) (packaging)
 
-DevTools open automatically in dev mode. The Vite dev server runs on `:5173`; the Express server on `:3001`.
+## Architecture
 
-Both layers hot-reload during development: Vite HMR handles renderer changes instantly, and `tsc --watch` + `nodemon` restart the main process whenever files in `electron/` change.
+<img width="1704" height="514" alt="electron-shell" src="https://github.com/user-attachments/assets/1227e7e2-48de-4edb-9ac7-b4d9698b3fc8" /><br />
+
+Three distinct layers:
+
+**Main process** ([src/backend/main.ts](src/backend/main.ts)) — Node.js / Electron entry point. Loads `.env`, changes `process.cwd()` to `userData` (avoids macOS TCC prompts), starts Express on port 3001, then opens a `BrowserWindow` pointing to either the Vite dev server (`:5173`) or `dist/index.html`.
+
+**Express server** ([src/backend/server.ts](src/backend/server.ts)) — A single `POST /generate` endpoint that invokes the Claude Agent SDK and streams results back to the renderer as Server-Sent Events (SSE). The system prompt lives in [src/prompt.ts](src/prompt.ts); the structured output schema (Zod → JSON Schema) lives in [src/schema.ts](src/schema.ts).
+
+**React renderer** ([src/frontend/App.tsx](src/frontend/App.tsx)) — Fetches `/generate`, consumes the SSE stream, and renders thinking text, tool-use calls, structured output, and performance metrics (duration, cost). Uses Radix UI Themes (dark mode).
+
+**No IPC.** Communication between renderer and backend is plain HTTP to `localhost:3001`. The `VITE_API_URL` env var is injected at build time so the renderer knows the URL.
+
+## Claude Agent SDK integration
+
+[src/backend/query.ts](src/backend/query.ts) dynamically imports `@anthropic-ai/claude-agent-sdk` at runtime to work around Electron's `.asar` packaging — native modules must live in `app.asar.unpacked/` (configured in `package.json`'s `build.asarUnpack` field). The `resolveUnpacked()` helper redirects the import path when running from a packaged build.
+
+SSE event types are defined in [src/types.ts](src/types.ts) and mirror `BetaContentBlock` from the Anthropic SDK.
+
+Optional Laminar observability is enabled when `LMNR_PROJECT_API_KEY` is set in `.env`.
+
+## TypeScript setup
+
+Two separate `tsconfig` files for the two environments:
+
+- `tsconfig.json` — renderer (Vite, bundler module resolution, targets browser)
+- `tsconfig.electron.json` — main process (Node16 module resolution, outputs to `out/`)
 
 ## Testing
 
-[Vitest](https://vitest.dev/) is used for both unit and component tests. [React Testing Library](https://testing-library.com/react) covers the renderer; [supertest](https://github.com/ladjs/supertest) covers the Express layer.
-
-```bash
-npm test           # Run all tests once
-npm run test:watch # Watch mode
-```
-
-Test files live next to the source they test (`*.test.ts` / `*.test.tsx`). The Express `app` is exported without auto-listening so supertest can bind it without a real port. Component tests run in jsdom; server tests use a Node environment via a per-file `@vitest-environment node` override.
-
-## Standards
-
-- Conventional Commits
-- TypeScript strict mode
-- ESLint + Prettier (enforced in CI via lint-staged pre-commit hook)
+- Backend tests use **supertest** ([src/backend/server.test.ts](src/backend/server.test.ts))
+- Frontend tests use **React Testing Library** ([src/frontend/App.test.tsx](src/frontend/App.test.tsx))
+- Vitest uses `jsdom` for renderer tests and `node` for backend tests (controlled per-file via `@vitest-environment` docblock)
 
 ## Code quality
 
-Linting and formatting are enforced at commit time via [Husky](https://typicode.github.io/husky/) + [lint-staged](https://github.com/lint-staged/lint-staged): staged `.ts`/`.tsx` files are auto-fixed by ESLint and formatted by Prettier before every commit.
+- Git style is Conventional Commits
+- Linting and formatting are enforced at commit time via [Husky](https://typicode.github.io/husky/) + [lint-staged](https://github.com/lint-staged/lint-staged): staged `.ts`/`.tsx` files are auto-fixed by ESLint and formatted by Prettier before every commit.
 
-To run manually:
+## Custom skills
 
-```bash
-npm run lint      # ESLint across src/ and electron/
-npm run format    # Prettier across src/, electron/, and index.html
+The agent has access to the project-local skills under `./.claude/skills/`. Agent logic can be extracted and bundled up in this way.
+
+## Environment
+
+Requires a `.env` file at the project root:
+
+```
+ANTHROPIC_API_KEY=...
+EXPRESS_PORT=3001          # optional
+LMNR_PROJECT_API_KEY=...   # optional, enables Laminar tracing
 ```
 
-**VS Code**: install the recommended extensions (`esbenp.prettier-vscode`, `dbaeumer.vscode-eslint`) and files will be formatted on save automatically.
+The `scripts/afterPack.cjs` hook copies `.env` into the packaged `.app` bundle at build time.
 
 ## Building a distributable
 
@@ -113,44 +114,10 @@ release/
 
 Re-run `npm run dist` whenever you want a fresh build. Each run overwrites the previous `release/` output.
 
-## Using the Claude Agent SDK
+## Debugging
 
-TK
+**Packaged app not working?** Run it directly from Terminal to see log output immediately:
 
-## Adding API endpoints
-
-Edit [electron/server.ts](electron/server.ts). Example:
-
-```ts
-app.get("/ping", (_req: Request, res: Response) => {
-  res.json({ ok: true });
-});
-```
-
-Then call it from React:
-
-```ts
-const data = await fetch("http://localhost:3001/ping").then((r) => r.json());
-```
-
-## Project structure
-
-```
-electron-shell/
-├── electron/
-│   ├── main.ts            Electron entry — opens window, starts Express
-│   ├── server.ts          Express app (exported without auto-listen)
-│   └── server.test.ts     Supertest tests for Express routes
-├── src/
-│   ├── main.tsx           React entry point
-│   ├── App.tsx            Root component
-│   ├── App.test.tsx       Component tests (React Testing Library)
-│   └── test-setup.ts      Vitest setup (jest-dom matchers)
-├── out/                   Compiled main process JS (gitignored, generated by tsc)
-├── index.html             Vite HTML template
-├── vite.config.ts
-├── vitest.config.ts
-├── tsconfig.json          Renderer / Vite TypeScript config
-├── tsconfig.electron.json Main process TypeScript config
-└── package.json           Also holds electron-builder config ("build" field)
+```bash
+release/mac-arm64/ElectronShell.app/Contents/MacOS/ElectronShell
 ```
