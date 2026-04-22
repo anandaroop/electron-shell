@@ -1,5 +1,6 @@
 import { Box, Button, Flex, Grid, Separator, Spinner, Text, TextField } from "@radix-ui/themes";
 import { useEffect, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
 import type { OutputType } from "../schema";
 import type { SseEvent } from "../types";
 
@@ -136,7 +137,7 @@ function EventView({ event }: { event: SseEvent }) {
       </Text>
     );
 
-  if (event.type === "text") return <Text style={{ whiteSpace: "pre-wrap" }}>{event.text}</Text>;
+  if (event.type === "text") return <ReactMarkdown>{event.text}</ReactMarkdown>;
 
   if (event.type === "tool_use")
     return (
