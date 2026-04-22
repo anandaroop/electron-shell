@@ -1,5 +1,15 @@
-import { Box, Button, Flex, Grid, Skeleton, Spinner, Text, TextField } from "@radix-ui/themes";
-import { useState } from "react";
+import {
+  Box,
+  Button,
+  Flex,
+  Grid,
+  Separator,
+  Skeleton,
+  Spinner,
+  Text,
+  TextField,
+} from "@radix-ui/themes";
+import { useEffect, useRef, useState } from "react";
 import type { OutputType } from "../schema";
 import type { SseEvent } from "../types";
 
@@ -10,11 +20,16 @@ export default function App() {
   const [events, setEvents] = useState<SseEvent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [structuredOutput, setStructuredOutput] = useState<OutputType | null>(null);
+  const statusRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (statusRef.current) {
+      statusRef.current.scrollTop = statusRef.current.scrollHeight;
+    }
+  }, [events]);
 
   async function fetchGeneration() {
     setIsLoading(true);
-    setEvents([]);
-    setStructuredOutput(null);
     try {
       const res = await fetch(`${API}/generate`, {
         method: "POST",
@@ -47,64 +62,80 @@ export default function App() {
 
   return (
     <Box height="100vh" overflow="hidden" p="6">
-      <Grid columns="3" gap="6" width="auto" height="100%">
-        {/* left column */}
+      <Flex direction="column" gap="4" height="100%">
+        <Text size="6" weight="bold">
+          Assistant
+        </Text>
+        <Separator size="4" />
+        <Grid columns="3" gap="6" width="auto" style={{ flexGrow: 1, overflow: "hidden" }}>
+          {/* Left column */}
+          <Flex direction="column" gap="4">
+            <Text weight="bold">Prompt</Text>
+            <TextField.Root
+              placeholder="Prompt"
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+            />
 
-        <Flex direction="column" gap="5">
-          <TextField.Root
-            placeholder="Prompt"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-          />
-
-          <Button
-            onClick={fetchGeneration}
-            disabled={isLoading}
-            style={{ padding: "0.5rem 1.25rem", fontSize: "1rem", cursor: "pointer" }}
-          >
-            {isLoading ? (
-              <>
-                <Spinner />
-                Processing…
-              </>
-            ) : (
-              "Submit"
-            )}
-          </Button>
-        </Flex>
-
-        {/* center column */}
-
-        <Flex direction="column" gap="5" height="100%" overflow="scroll">
-          {structuredOutput !== null && (
-            <Box
-              p="3"
-              style={{
-                background: "var(--gray-a3)",
-                borderRadius: "var(--radius-2)",
-                fontFamily: "monospace",
-                fontSize: "0.8rem",
-                whiteSpace: "pre-wrap",
-                wordBreak: "break-all",
-              }}
+            <Button
+              onClick={fetchGeneration}
+              disabled={isLoading}
+              mt="4"
+              style={{ padding: "0.5rem 1.25rem", fontSize: "1rem", cursor: "pointer" }}
             >
-              {JSON.stringify(structuredOutput, null, 2)}
+              {isLoading ? (
+                <>
+                  <Spinner />
+                  Processing…
+                </>
+              ) : (
+                "Submit"
+              )}
+            </Button>
+          </Flex>
+
+          {/* Center column */}
+          <Flex direction="column" gap="4" height="100%" overflow="hidden">
+            <Text weight="bold">Result</Text>
+            <Box style={{ overflowY: "scroll", flexGrow: 1 }}>
+              {structuredOutput !== null && (
+                <Box
+                  p="3"
+                  style={{
+                    background: "var(--gray-a3)",
+                    borderRadius: "var(--radius-2)",
+                    fontFamily: "monospace",
+                    fontSize: "0.8rem",
+                    whiteSpace: "pre-wrap",
+                    wordBreak: "break-all",
+                  }}
+                >
+                  {JSON.stringify(structuredOutput, null, 2)}
+                </Box>
+              )}
             </Box>
-          )}
-        </Flex>
+          </Flex>
 
-        {/* right column */}
-
-        <Flex direction="column" gap="5" height="100%" overflow="scroll">
-          {isLoading && events.length === 0 ? (
-            <Skeleton>
-              <Box height="100px" />
-            </Skeleton>
-          ) : (
-            events.map((event, i) => <EventView key={i} event={event} />)
-          )}
-        </Flex>
-      </Grid>
+          {/* Right column */}
+          <Flex direction="column" gap="4" height="100%" overflow="hidden">
+            <Text weight="bold">Status</Text>
+            <Flex
+              ref={statusRef}
+              direction="column"
+              gap="3"
+              style={{ overflowY: "scroll", flexGrow: 1 }}
+            >
+              {isLoading && events.length === 0 ? (
+                <Skeleton>
+                  <Box height="100px" />
+                </Skeleton>
+              ) : (
+                events.map((event, i) => <EventView key={i} event={event} />)
+              )}
+            </Flex>
+          </Flex>
+        </Grid>
+      </Flex>
     </Box>
   );
 }
