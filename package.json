@@ -44,6 +44,7 @@
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.2.114",
+    "@lmnr-ai/lmnr": "^0.8.20",
     "@radix-ui/themes": "^3.3.0",
     "cors": "^2.8.5",
     "dedent": "^1.7.2",

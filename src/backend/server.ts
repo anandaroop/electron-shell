@@ -6,6 +6,20 @@ import type * as ClaudeAgentSdk from "@anthropic-ai/claude-agent-sdk" with {
 };
 import { schema } from "../schema";
 import { systemPrompt } from "../prompt";
+import { Laminar } from "@lmnr-ai/lmnr";
+
+// maybe configure Laminar
+if (process.env.LMNR_PROJECT_API_KEY) {
+  console.log("🟢 Laminar observability is enabled");
+  Laminar.initialize({
+    projectApiKey: process.env.LMNR_PROJECT_API_KEY,
+    baseUrl: process.env.LMNR_BASE_URL,
+    httpPort: parseInt(process.env.LMNR_HTTP_PORT!),
+    grpcPort: parseInt(process.env.LMNR_GRPC_PORT!),
+  });
+} else {
+  console.log("🔴 Laminar observability is disabled");
+}
 
 function resolveUnpacked(pkg: string): string {
   const _require = createRequire(__filename);
@@ -18,17 +32,23 @@ app.use(cors());
 app.use(express.json());
 
 app.post("/bio", async (_req: Request, res: Response) => {
+  console.log("Starting /bio request");
+
   // Static import of the Claude Agent SDK would have been the typical:
   // import { query } from "@anthropic-ai/claude-agent-sdk"
   //
   // Dynamic import with runtime path needed because asar-unpacked native modules
   // can't be required by name. The `as typeof` cast restores types dynamic
   // import() can't infer.
-  const { query } = (await import(
+  const { query: origQuery } = (await import(
     resolveUnpacked("@anthropic-ai/claude-agent-sdk")
   )) as typeof ClaudeAgentSdk;
 
-  console.log("Starting /bio request");
+  // maybe instrument the query with Laminar
+  const query = process.env.LMNR_PROJECT_API_KEY
+    ? Laminar.wrapClaudeAgentQuery(origQuery)
+    : origQuery;
+
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
