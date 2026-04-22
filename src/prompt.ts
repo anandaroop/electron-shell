@@ -1,6 +1,6 @@
 import dedent from "dedent";
 
-export const systemPrompt = dedent`
+export const SYSTEM_PROMPT = dedent`
   You will search for the latest pro basketball result and summarize it in haiku form.
 
   - You must use a Todo list

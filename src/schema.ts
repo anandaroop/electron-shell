@@ -7,4 +7,4 @@ export const Haiku = z.object({
 
 export type HaikuType = z.infer<typeof Haiku>;
 
-export const schema = omit(z.toJSONSchema(Haiku), "$schema");
+export const HAIKU_SCHEMA = omit(z.toJSONSchema(Haiku), "$schema");

@@ -1,8 +1,8 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
 import { CLAUDE_CWD, getQueryFn } from "./query";
-import { schema } from "../schema";
-import { systemPrompt } from "../prompt";
+import { SYSTEM_PROMPT } from "../prompt";
+import { HAIKU_SCHEMA } from "../schema";
 
 export const app = express();
 
@@ -24,12 +24,12 @@ app.post("/bio", async (_req: Request, res: Response) => {
       prompt: `Give me the haiku`,
       options: {
         cwd: CLAUDE_CWD,
-        systemPrompt,
+        systemPrompt: SYSTEM_PROMPT,
         settingSources: ["project"],
         allowedTools: ["ToolSearch", "TodoWrite", "WebSearch", "WebFetch", "Skill", "Task"],
         outputFormat: {
           type: "json_schema",
-          schema,
+          schema: HAIKU_SCHEMA,
         },
       },
     })) {
