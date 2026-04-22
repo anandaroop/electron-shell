@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import cors from "cors";
 import { CLAUDE_CWD, getQueryFn } from "./query";
 import { SYSTEM_PROMPT } from "../prompt";
-import { HAIKU_SCHEMA } from "../schema";
+import { OUTPUT_SCHEMA } from "../schema";
 import type { BetaContentBlock } from "@anthropic-ai/sdk/resources/beta";
 import pick from "lodash/pick";
 import type {
@@ -39,7 +39,7 @@ app.post("/generate", async (_req: Request, res: Response) => {
         allowedTools: ["ToolSearch", "TodoWrite", "WebSearch", "WebFetch", "Skill", "Task"],
         outputFormat: {
           type: "json_schema",
-          schema: HAIKU_SCHEMA,
+          schema: OUTPUT_SCHEMA,
         },
       },
     })) {

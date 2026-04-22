@@ -1,5 +1,6 @@
 import { Box, Button, Flex, Grid, Skeleton, Spinner, Text } from "@radix-ui/themes";
 import { useState } from "react";
+import type { OutputType } from "../schema";
 import type { SseEvent } from "../types";
 
 const API = import.meta.env.VITE_API_URL as string;
@@ -7,10 +8,12 @@ const API = import.meta.env.VITE_API_URL as string;
 export default function App() {
   const [events, setEvents] = useState<SseEvent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [structuredOutput, setStructuredOutput] = useState<OutputType | null>(null);
 
   async function fetchGeneration() {
     setIsLoading(true);
     setEvents([]);
+    setStructuredOutput(null);
     try {
       const res = await fetch(`${API}/generate`, {
         method: "POST",
@@ -26,6 +29,9 @@ export default function App() {
           if (line.startsWith("data: ")) {
             const event = JSON.parse(line.slice(6)) as SseEvent;
             setEvents((prev) => [...prev, event]);
+            if (event.type === "done" && event.structured_output !== undefined) {
+              setStructuredOutput(event.structured_output);
+            }
           }
         }
       }
@@ -39,7 +45,7 @@ export default function App() {
 
   return (
     <Box height="100vh" overflow="hidden" p="6">
-      <Grid columns="2" gap="6" width="auto" height="100%">
+      <Grid columns="3" gap="6" width="auto" height="100%">
         {/* left column */}
 
         <Flex direction="column" gap="5">
@@ -57,6 +63,26 @@ export default function App() {
               "Submit"
             )}
           </Button>
+        </Flex>
+
+        {/* center column */}
+
+        <Flex direction="column" gap="5" height="100%" overflow="scroll">
+          {structuredOutput !== null && (
+            <Box
+              p="3"
+              style={{
+                background: "var(--gray-a3)",
+                borderRadius: "var(--radius-2)",
+                fontFamily: "monospace",
+                fontSize: "0.8rem",
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-all",
+              }}
+            >
+              {JSON.stringify(structuredOutput, null, 2)}
+            </Box>
+          )}
         </Flex>
 
         {/* right column */}

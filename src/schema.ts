@@ -1,10 +1,10 @@
 import { omit } from "lodash";
 import { z } from "zod";
 
-export const Haiku = z.object({
+export const OutputSchema = z.object({
   haikus: z.string().array().describe("an array of haiku stanzas, one haiku per element"),
 });
 
-export type HaikuType = z.infer<typeof Haiku>;
+export type OutputType = z.infer<typeof OutputSchema>;
 
-export const HAIKU_SCHEMA = omit(z.toJSONSchema(Haiku), "$schema");
+export const OUTPUT_SCHEMA = omit(z.toJSONSchema(OutputSchema), "$schema");
