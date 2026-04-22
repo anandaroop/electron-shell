@@ -34,6 +34,12 @@
       "dist/**"
     ],
     "afterPack": "./scripts/afterPack.cjs",
+    "extraResources": [
+      {
+        "from": ".claude",
+        "to": ".claude"
+      }
+    ],
     "asarUnpack": [
       "node_modules/@anthropic-ai/claude-agent-sdk/**",
       "node_modules/@anthropic-ai/claude-agent-sdk-darwin-arm64/**"

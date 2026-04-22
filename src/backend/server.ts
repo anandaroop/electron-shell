@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
-import { getQueryFn } from "./query";
+import { CLAUDE_CWD, getQueryFn } from "./query";
 import { schema } from "../schema";
 import { systemPrompt } from "../prompt";
 
@@ -23,8 +23,10 @@ app.post("/bio", async (_req: Request, res: Response) => {
     for await (const message of query({
       prompt: `Give me the haiku`,
       options: {
+        cwd: CLAUDE_CWD,
         systemPrompt,
-        allowedTools: ["TodoWrite", "WebSearch", "WebFetch"],
+        settingSources: ["project"],
+        allowedTools: ["ToolSearch", "TodoWrite", "WebSearch", "WebFetch", "Skill", "Task"],
         outputFormat: {
           type: "json_schema",
           schema,

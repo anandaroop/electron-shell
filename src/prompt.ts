@@ -1,9 +1,9 @@
 import dedent from "dedent";
 
 export const systemPrompt = dedent`
-You will search for the latest NBA Playoffs news and summarize it in haiku form.
+  You will search for the latest pro basketball result and summarize it in haiku form.
 
-- You must use a Todo list
-- You must use WebFetch to get at least 1 full page result
-- Return a single haiku stanza about one of the matches
+  - You must use a Todo list
+  - You must use the /fetch-scores skill to obtain the game result
+  - Return one haiku stanza, describing the match
 `;

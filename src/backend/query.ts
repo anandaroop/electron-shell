@@ -1,4 +1,6 @@
 import { createRequire } from "module";
+import { app as electronApp } from "electron";
+import path from "path";
 import type * as ClaudeAgentSdk from "@anthropic-ai/claude-agent-sdk" with {
   "resolution-mode": "import",
 };
@@ -15,6 +17,14 @@ if (process.env.LMNR_PROJECT_API_KEY) {
 } else {
   console.log("🔴 Laminar observability is disabled");
 }
+
+/**
+ * Location of .claude/ contents within the Electron bundle,
+ * so that Claude Agent SDK can access them.
+ */
+export const CLAUDE_CWD = electronApp.isPackaged
+  ? process.resourcesPath
+  : path.resolve(__dirname, "../..");
 
 /**
  * Returns a ready-to-use Claude Agent SDK Query function.
