@@ -3,6 +3,7 @@ import {
   Button,
   Flex,
   Grid,
+  Heading,
   Separator,
   Skeleton,
   Spinner,
@@ -18,7 +19,13 @@ import type { SseEvent } from "../types";
 const API = import.meta.env.VITE_API_URL as string;
 
 export default function App() {
-  const [prompt, setPrompt] = useState("Give me the haiku");
+  const [artistName, setArtistName] = useState("Omyo Cho");
+  const [sources, setSources] = useState<string[]>([
+    "https://www.omyocho.com/",
+    "https://monthlyart.com/portfolio-item/omyo-cho/",
+    "https://www.woosongallery.com/artists/93-omyo-cho/",
+    "https://art360.place/en/artists/omyo-cho/",
+  ]);
   const [events, setEvents] = useState<SseEvent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [structuredOutput, setStructuredOutput] = useState<OutputType | null>(null);
@@ -30,6 +37,10 @@ export default function App() {
     }
   }, [events]);
 
+  function removeSource(index: number) {
+    setSources((prev) => prev.filter((_, i) => i !== index));
+  }
+
   async function fetchGeneration() {
     setEvents([]);
     setStructuredOutput(null);
@@ -38,7 +49,7 @@ export default function App() {
       const res = await fetch(`${API}/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ artistName, sources: sources.filter(Boolean) }),
       });
       const reader = res.body!.getReader();
       const decoder = new TextDecoder();
@@ -66,20 +77,50 @@ export default function App() {
 
   return (
     <Box height="100vh" overflow="hidden" p="6">
-      <Flex direction="column" gap="4" height="100%">
-        <Text size="6" weight="bold">
-          Assistant
-        </Text>
+      <Flex direction="column" gap="6" height="100%">
+        <Flex align="baseline">
+          <Heading size="8" weight="bold">
+            Artist Bio Assistant
+          </Heading>
+          {isLoading ? <Spinner size="3" ml="2" /> : null}
+        </Flex>
+
         <Separator size="4" />
+
         <Grid columns="3" gap="6" width="auto" style={{ flexGrow: 1, overflow: "hidden" }}>
           {/* Left column */}
           <Flex direction="column" gap="4">
-            <Text weight="bold">Prompt</Text>
-            <TextField.Root
-              placeholder="Prompt"
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-            />
+            <Flex direction="column" gap="2">
+              <Text weight="bold">Artist name</Text>
+              <TextField.Root
+                placeholder="Artist name"
+                value={artistName}
+                onChange={(e) => setArtistName(e.target.value)}
+              />
+            </Flex>
+
+            <Flex direction="column" gap="3">
+              <Text weight="bold">Sources</Text>
+              {sources.map((src, i) => (
+                <Flex key={i} gap="2" align="center">
+                  <TextField.Root
+                    placeholder={`Source ${i + 1}`}
+                    value={src}
+                    onChange={(e) =>
+                      setSources((prev) => prev.map((s, j) => (j === i ? e.target.value : s)))
+                    }
+                    style={{ flexGrow: 1 }}
+                  />
+                  <Button variant="ghost" onClick={() => removeSource(i)}>
+                    ✕
+                  </Button>
+                </Flex>
+              ))}
+
+              <Button variant="outline" onClick={() => setSources((prev) => [...prev, ""])}>
+                + Add source
+              </Button>
+            </Flex>
 
             <Button
               onClick={fetchGeneration}
@@ -93,7 +134,7 @@ export default function App() {
                   Processing…
                 </>
               ) : (
-                "Submit"
+                "Generate bio"
               )}
             </Button>
           </Flex>

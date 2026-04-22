@@ -24,14 +24,21 @@ app.post("/generate", async (req: Request, res: Response) => {
   res.setHeader("Connection", "keep-alive");
   res.flushHeaders();
 
-  console.log("Starting /generate request");
+  const artistName = req.body.artistName as string;
+  const sources = (req.body.sources as string[]) ?? [];
+  console.log("Starting /generate request, artistName:", artistName, "sources:", sources);
   sendSseEvent({ type: "start", endpoint: "generate" }, res);
+
+  const sourceList = sources.map((s) => `- ${s}`).join("\n");
+  const prompt = sources.length
+    ? `Write a bio for ${artistName} using the following sources:\n\n${sourceList}`
+    : `Write a bio for ${artistName}`;
 
   const query = await getQueryFn();
 
   try {
     for await (const message of query({
-      prompt: req.body.prompt as string,
+      prompt,
       options: {
         cwd: CLAUDE_CWD,
         systemPrompt: SYSTEM_PROMPT,
@@ -64,6 +71,7 @@ app.post("/generate", async (req: Request, res: Response) => {
     res.write(`data: ${JSON.stringify({ type: "error", message: String(err) })}\n\n`);
   }
 
+  console.log("Ending /generate request");
   res.end();
 });
 
