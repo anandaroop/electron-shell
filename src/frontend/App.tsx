@@ -149,7 +149,7 @@ function EventView({ event }: { event: SseEvent }) {
 
   if (event.type === "thinking")
     return (
-      <Text style={{ whiteSpace: "pre-wrap", opacity: 0.5, fontStyle: "italic" }}>
+      <Text size="2" style={{ whiteSpace: "pre-wrap", opacity: 0.5, fontStyle: "italic" }}>
         {event.text}
       </Text>
     );
