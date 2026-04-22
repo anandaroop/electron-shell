@@ -3,6 +3,15 @@ import cors from "cors";
 import { CLAUDE_CWD, getQueryFn } from "./query";
 import { SYSTEM_PROMPT } from "../prompt";
 import { HAIKU_SCHEMA } from "../schema";
+import type { BetaContentBlock } from "@anthropic-ai/sdk/resources/beta";
+import pick from "lodash/pick";
+import type {
+  SseDoneEvent,
+  SseEvent,
+  SseTextEvent,
+  SseThinkingEvent,
+  SseToolUseEvent,
+} from "../types";
 
 export const app = express();
 
@@ -10,12 +19,13 @@ app.use(cors());
 app.use(express.json());
 
 app.post("/bio", async (_req: Request, res: Response) => {
-  console.log("Starting /bio request");
-
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
   res.flushHeaders();
+
+  console.log("Starting /bio request");
+  sendSseEvent({ type: "start", endpoint: "bio" }, res);
 
   const query = await getQueryFn();
 
@@ -33,25 +43,20 @@ app.post("/bio", async (_req: Request, res: Response) => {
         },
       },
     })) {
-      console.log(`Received ${message.type} message`);
       if (message.type === "assistant" && message.message?.content) {
         for (const block of message.message.content) {
-          if ("text" in block) {
-            const event = `data: ${JSON.stringify({ type: "text", text: block.text })}\n\n`;
-            console.log("Sending event:", event);
-            res.write(event);
-          } else if ("name" in block) {
-            const input = block.input as Record<string, unknown>;
-            const url = block.name === "WebFetch" ? (input.url as string) : undefined;
-            const event = `data: ${JSON.stringify({ type: "tool", name: block.name, url })}\n\n`;
-            console.log("Sending event:", event);
-            res.write(event);
-          }
+          const event = createSseEventFromAssistantMessageBlock(block);
+          sendSseEvent(event, res);
         }
-      } else if (message.type === "result") {
-        const event = `data: ${JSON.stringify({ type: "done", subtype: message.subtype })}\n\n`;
-        console.log("Sending event:", event);
-        res.write(event);
+      }
+
+      if (message.type === "user") {
+        // ignore: usually a non-user-facing tool_use_result
+      }
+
+      if (message.type === "result") {
+        const event = createSseEventFromResultMessage(message);
+        sendSseEvent(event, res);
       }
     }
   } catch (err) {
@@ -61,3 +66,44 @@ app.post("/bio", async (_req: Request, res: Response) => {
 
   res.end();
 });
+
+function createSseEventFromAssistantMessageBlock(
+  block: BetaContentBlock
+): SseTextEvent | SseThinkingEvent | SseToolUseEvent | null {
+  if (block.type === "text") {
+    return { type: "text", text: block.text };
+  }
+
+  if (block.type === "thinking") {
+    return { type: "thinking", text: block.thinking };
+  }
+
+  if (block.type === "tool_use") {
+    return { type: "tool_use", name: block.name, input: block.input };
+  }
+
+  return null;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function createSseEventFromResultMessage(message: any): SseDoneEvent {
+  return {
+    type: "done" as const,
+    ...pick(message, [
+      "session_id",
+      "subtype",
+      "duration_ms",
+      "duration_api_ms",
+      "total_cost_usd",
+      "result",
+      "structured_output",
+    ]),
+  };
+}
+
+function sendSseEvent(event: SseEvent | null, res: Response) {
+  if (!event) return;
+
+  console.log("Sending event:", event);
+  res.write(`data: ${JSON.stringify(event)}\n\n`);
+}
