@@ -18,7 +18,7 @@ export const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.post("/generate", async (_req: Request, res: Response) => {
+app.post("/generate", async (req: Request, res: Response) => {
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
@@ -31,7 +31,7 @@ app.post("/generate", async (_req: Request, res: Response) => {
 
   try {
     for await (const message of query({
-      prompt: `Give me the haiku`,
+      prompt: req.body.prompt as string,
       options: {
         cwd: CLAUDE_CWD,
         systemPrompt: SYSTEM_PROMPT,

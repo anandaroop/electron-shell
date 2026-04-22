@@ -1,4 +1,4 @@
-import { Box, Button, Flex, Grid, Skeleton, Spinner, Text } from "@radix-ui/themes";
+import { Box, Button, Flex, Grid, Skeleton, Spinner, Text, TextField } from "@radix-ui/themes";
 import { useState } from "react";
 import type { OutputType } from "../schema";
 import type { SseEvent } from "../types";
@@ -6,6 +6,7 @@ import type { SseEvent } from "../types";
 const API = import.meta.env.VITE_API_URL as string;
 
 export default function App() {
+  const [prompt, setPrompt] = useState("Give me the haiku");
   const [events, setEvents] = useState<SseEvent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [structuredOutput, setStructuredOutput] = useState<OutputType | null>(null);
@@ -18,6 +19,7 @@ export default function App() {
       const res = await fetch(`${API}/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
       });
       const reader = res.body!.getReader();
       const decoder = new TextDecoder();
@@ -49,6 +51,12 @@ export default function App() {
         {/* left column */}
 
         <Flex direction="column" gap="5">
+          <TextField.Root
+            placeholder="Prompt"
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+          />
+
           <Button
             onClick={fetchGeneration}
             disabled={isLoading}
