@@ -1,10 +1,14 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
 import { createRequire } from "module";
-
-const _require = createRequire(__filename);
+import type * as ClaudeAgentSdk from "@anthropic-ai/claude-agent-sdk" with {
+  "resolution-mode": "import",
+};
+import { schema } from "../schema";
+import { systemPrompt } from "../prompt";
 
 function resolveUnpacked(pkg: string): string {
+  const _require = createRequire(__filename);
   return _require.resolve(pkg).replace(/app\.asar([/\\])/g, "app.asar.unpacked$1");
 }
 
@@ -13,29 +17,33 @@ export const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get("/hello", (_req: Request, res: Response) => {
-  res.json({ message: "Hello from Express!" });
-});
-
 app.post("/bio", async (_req: Request, res: Response) => {
+  // Static import of the Claude Agent SDK would have been the typical:
+  // import { query } from "@anthropic-ai/claude-agent-sdk"
+  //
+  // Dynamic import with runtime path needed because asar-unpacked native modules
+  // can't be required by name. The `as typeof` cast restores types dynamic
+  // import() can't infer.
+  const { query } = (await import(
+    resolveUnpacked("@anthropic-ai/claude-agent-sdk")
+  )) as typeof ClaudeAgentSdk;
+
   console.log("Starting /bio request");
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
   res.flushHeaders();
 
-  const { query } = await import(resolveUnpacked("@anthropic-ai/claude-agent-sdk"));
   try {
     for await (const message of query({
-      prompt: `
-    You will search for the latest NBA Playoffs news and summarize it in haiku form.
-
-    - You must use a Todo list
-    - You must use WebFetch to get at least 1 full page result
-    - Return 1-3 haiku stanzas
-    `,
+      prompt: `Give me the haiku`,
       options: {
+        systemPrompt,
         allowedTools: ["TodoWrite", "WebSearch", "WebFetch"],
+        outputFormat: {
+          type: "json_schema",
+          schema,
+        },
       },
     })) {
       console.log(`Received ${message.type} message`);
