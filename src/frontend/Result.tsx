@@ -1,5 +1,16 @@
 import React, { useState } from "react";
-import { Badge, Box, Callout, Flex, Grid, Heading, Link, Separator, Text } from "@radix-ui/themes";
+import {
+  Badge,
+  Box,
+  Callout,
+  Flex,
+  Grid,
+  Heading,
+  Link,
+  Separator,
+  Tabs,
+  Text,
+} from "@radix-ui/themes";
 import { OutputType } from "../schema";
 
 interface ResultProps {
@@ -111,30 +122,66 @@ export const Result: React.FC<ResultProps> = (props) => {
         <Heading size="3" weight="bold">
           Citations
         </Heading>
-        <Flex direction="column" gap="3">
-          {citations.map((citation, i) => (
-            <Box
-              key={i}
-              p="3"
-              style={{
-                background: "var(--gray-a2)",
-                borderRadius: "var(--radius-2)",
-                borderLeft: `3px solid ${citation.supported ? "var(--green-8)" : "var(--red-8)"}`,
-              }}
-            >
-              <Flex direction="column" gap="2">
-                <Flex align="start" gap="2">
-                  <Text size="1" style={{ flexShrink: 0, marginTop: "1px" }}>
-                    {citation.supported ? "✓" : "✗"}
-                  </Text>
-                  <Text size="2" style={{ lineHeight: 1.5 }}>
-                    {citation.claim}
-                  </Text>
-                </Flex>
-                <Flex direction="column" gap="1" style={{ paddingLeft: "1.2rem" }}>
-                  {citation.sources.map((url, j) => (
+        <Tabs.Root defaultValue="by-claim">
+          <Tabs.List>
+            <Tabs.Trigger value="by-claim">By claim</Tabs.Trigger>
+            <Tabs.Trigger value="by-source">By source</Tabs.Trigger>
+          </Tabs.List>
+
+          <Tabs.Content value="by-claim">
+            <Flex direction="column" gap="3" pt="3">
+              {citations.map((citation, i) => (
+                <Box
+                  key={i}
+                  p="3"
+                  style={{
+                    background: "var(--gray-a2)",
+                    borderRadius: "var(--radius-2)",
+                    borderLeft: `3px solid ${citation.supported ? "var(--green-8)" : "var(--red-8)"}`,
+                  }}
+                >
+                  <Flex direction="column" gap="2">
+                    <Flex align="start" gap="2">
+                      <Text size="1" style={{ flexShrink: 0, marginTop: "1px" }}>
+                        {citation.supported ? "✓" : "✗"}
+                      </Text>
+                      <Text size="2" style={{ lineHeight: 1.5 }}>
+                        {citation.claim}
+                      </Text>
+                    </Flex>
+                    <Flex direction="column" gap="1" style={{ paddingLeft: "1.2rem" }}>
+                      {citation.sources.map((url, j) => (
+                        <Link
+                          key={j}
+                          href={url}
+                          target="_blank"
+                          size="1"
+                          color="gray"
+                          style={{ wordBreak: "break-all" }}
+                        >
+                          {url}
+                        </Link>
+                      ))}
+                    </Flex>
+                  </Flex>
+                </Box>
+              ))}
+            </Flex>
+          </Tabs.Content>
+
+          <Tabs.Content value="by-source">
+            <Flex direction="column" gap="3" pt="3">
+              {[...new Set(citations.flatMap((c) => c.sources))].map((url) => (
+                <Box
+                  key={url}
+                  p="3"
+                  style={{
+                    background: "var(--gray-a2)",
+                    borderRadius: "var(--radius-2)",
+                  }}
+                >
+                  <Flex direction="column" gap="2">
                     <Link
-                      key={j}
                       href={url}
                       target="_blank"
                       size="1"
@@ -143,12 +190,34 @@ export const Result: React.FC<ResultProps> = (props) => {
                     >
                       {url}
                     </Link>
-                  ))}
-                </Flex>
-              </Flex>
-            </Box>
-          ))}
-        </Flex>
+                    <Flex direction="column" gap="2">
+                      {citations
+                        .filter((c) => c.sources.includes(url))
+                        .map((c, i) => (
+                          <Box
+                            key={i}
+                            pl="2"
+                            style={{
+                              borderLeft: `3px solid ${c.supported ? "var(--green-8)" : "var(--red-8)"}`,
+                            }}
+                          >
+                            <Flex align="start" gap="2">
+                              <Text size="1" style={{ flexShrink: 0, marginTop: "1px" }}>
+                                {c.supported ? "✓" : "✗"}
+                              </Text>
+                              <Text size="2" style={{ lineHeight: 1.5 }}>
+                                {c.claim}
+                              </Text>
+                            </Flex>
+                          </Box>
+                        ))}
+                    </Flex>
+                  </Flex>
+                </Box>
+              ))}
+            </Flex>
+          </Tabs.Content>
+        </Tabs.Root>
       </Flex>
     </Flex>
   );
