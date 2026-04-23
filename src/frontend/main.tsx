@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import "@radix-ui/themes/styles.css";
+import "./index.css";
 import { Theme } from "@radix-ui/themes";
 
 function Root() {

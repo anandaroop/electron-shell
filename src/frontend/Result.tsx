@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Badge, Box, Callout, Flex, Grid, Heading, Link, Separator, Text } from "@radix-ui/themes";
 import { OutputType } from "../schema";
 
@@ -21,10 +21,20 @@ const reviewTypeLabel: Record<"uncertainty" | "missing_information" | "other", s
   other: "Other",
 };
 
-export const Result: React.FC<ResultProps> = ({ structuredOutput }) => {
+export const Result: React.FC<ResultProps> = (props) => {
+  const { structuredOutput } = props;
+  const [copied, setCopied] = useState(false);
+
   if (!structuredOutput) return null;
 
   const { bio, notes, review, citations } = structuredOutput;
+
+  const handleCopyBio = () => {
+    navigator.clipboard.writeText(bio).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1000);
+    });
+  };
 
   return (
     <Flex direction="column" gap="6" pb="6">
@@ -33,9 +43,26 @@ export const Result: React.FC<ResultProps> = ({ structuredOutput }) => {
         <Heading size="3" weight="bold">
           Biography
         </Heading>
-        <Text size="2" style={{ lineHeight: 1.7 }}>
-          {bio}
-        </Text>
+        <Box onClick={handleCopyBio} style={{ position: "relative", cursor: "pointer" }}>
+          <Text size="2" style={{ lineHeight: 1.7 }}>
+            {bio}
+          </Text>
+          {copied && (
+            <Text
+              size="1"
+              style={{
+                position: "absolute",
+                top: 0,
+                right: 0,
+                color: "var(--green-11)",
+                animation: "float-up-fade 1s ease-out forwards",
+                pointerEvents: "none",
+              }}
+            >
+              Copied ✓
+            </Text>
+          )}
+        </Box>
       </Flex>
 
       <Separator size="4" />
