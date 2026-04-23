@@ -38,6 +38,10 @@
       {
         "from": ".claude",
         "to": ".claude"
+      },
+      {
+        "from": "docs",
+        "to": "docs"
       }
     ],
     "asarUnpack": [
