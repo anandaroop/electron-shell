@@ -41,6 +41,7 @@ app.post("/generate", async (req: Request, res: Response) => {
       prompt,
       options: {
         cwd: CLAUDE_CWD,
+        model: "claude-sonnet-4-6",
         systemPrompt: SYSTEM_PROMPT,
         settingSources: ["project"],
         allowedTools: ["ToolSearch", "TodoWrite", "WebSearch", "WebFetch", "Skill", "Task"],
