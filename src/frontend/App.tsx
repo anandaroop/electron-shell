@@ -141,7 +141,7 @@ export default function App() {
             <Button
               size="4"
               onClick={fetchGeneration}
-              disabled={isLoading}
+              disabled={isLoading || !artistName.trim() || !sources.some(Boolean)}
               mt="4"
               style={{ padding: "0.5rem 1.25rem", fontSize: "1rem", cursor: "pointer" }}
             >
