@@ -24,8 +24,8 @@
     "*.{html,json,md}": "prettier --write"
   },
   "build": {
-    "appId": "com.electronshell.app",
-    "productName": "ElectronShell — Demo App",
+    "appId": "com.artistbioassistant.app",
+    "productName": "Artist Bio Assistant",
     "directories": {
       "output": "release"
     },
