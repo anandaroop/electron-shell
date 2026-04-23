@@ -30,9 +30,7 @@ app.post("/generate", async (req: Request, res: Response) => {
   sendSseEvent({ type: "start", endpoint: "generate" }, res);
 
   const sourceList = sources.map((s) => `- ${s}`).join("\n");
-  const prompt = sources.length
-    ? `Write a bio for ${artistName} using the following sources:\n\n${sourceList}`
-    : `Write a bio for ${artistName}`;
+  const prompt = `Write a bio for ${artistName} using the following sources:\n\n${sourceList}`;
 
   const query = await getQueryFn();
 
