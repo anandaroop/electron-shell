@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, shell } from "electron";
 import path from "path";
 import * as dotenv from "dotenv";
 
@@ -27,6 +27,11 @@ function createWindow(): void {
     webPreferences: {
       contextIsolation: true,
     },
+  });
+
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url);
+    return { action: "deny" };
   });
 
   if (isDev) {

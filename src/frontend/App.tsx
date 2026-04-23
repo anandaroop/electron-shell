@@ -5,16 +5,16 @@ import {
   Grid,
   Heading,
   Separator,
-  Skeleton,
   Spinner,
   Text,
   TextField,
 } from "@radix-ui/themes";
 import { useEffect, useRef, useState } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import type { OutputType } from "../schema";
 import type { SseEvent } from "../types";
+import { Result } from "./Result";
+import { ResultPlaceholder } from "./ResultPlaceholder";
+import { EventLog } from "./EventLog";
 
 const API = import.meta.env.VITE_API_URL as string;
 
@@ -60,6 +60,7 @@ export default function App() {
         for (const line of decoder.decode(value).split("\n")) {
           if (line.startsWith("data: ")) {
             const event = JSON.parse(line.slice(6)) as SseEvent;
+            console.log(event);
             setEvents((prev) => [...prev, event]);
             if (event.type === "done" && event.structured_output !== undefined) {
               setStructuredOutput(event.structured_output);
@@ -82,16 +83,20 @@ export default function App() {
           <Heading size="8" weight="bold">
             Artist Bio Assistant
           </Heading>
-          {isLoading ? <Spinner size="3" ml="2" /> : null}
+          <Spinner loading={isLoading} size="3" ml="2" />
         </Flex>
 
         <Separator size="4" />
 
         <Grid columns="3" gap="6" width="auto" style={{ flexGrow: 1, overflow: "hidden" }}>
           {/* Left column */}
-          <Flex direction="column" gap="4">
-            <Flex direction="column" gap="2">
-              <Text weight="bold">Artist name</Text>
+
+          <Flex direction="column" gap="5">
+            <Flex direction="column" gap="5">
+              <Text size="5" weight="bold">
+                Artist name
+              </Text>
+
               <TextField.Root
                 placeholder="Artist name"
                 value={artistName}
@@ -100,7 +105,9 @@ export default function App() {
             </Flex>
 
             <Flex direction="column" gap="3">
-              <Text weight="bold">Sources</Text>
+              <Text size="5" weight="bold">
+                Sources
+              </Text>
               {sources.map((src, i) => (
                 <Flex key={i} gap="2" align="center">
                   <TextField.Root
@@ -123,6 +130,7 @@ export default function App() {
             </Flex>
 
             <Button
+              size="4"
               onClick={fetchGeneration}
               disabled={isLoading}
               mt="4"
@@ -139,111 +147,33 @@ export default function App() {
             </Button>
           </Flex>
 
-          {/* Center column */}
+          {/* Center column — structured output result */}
+
           <Flex direction="column" gap="4" height="100%" overflow="hidden">
-            <Text weight="bold">Result</Text>
+            <Text size="5" weight="bold">
+              Result
+            </Text>
+
             <Box style={{ overflowY: "scroll", flexGrow: 1 }}>
-              {structuredOutput !== null && (
-                <Box
-                  p="3"
-                  style={{
-                    background: "var(--gray-a3)",
-                    borderRadius: "var(--radius-2)",
-                    fontFamily: "monospace",
-                    fontSize: "0.8rem",
-                    whiteSpace: "pre-wrap",
-                    wordBreak: "break-all",
-                  }}
-                >
-                  {JSON.stringify(structuredOutput, null, 2)}
-                </Box>
+              {structuredOutput === null ? (
+                <ResultPlaceholder loading={isLoading} />
+              ) : (
+                <Result structuredOutput={structuredOutput} />
               )}
             </Box>
           </Flex>
 
-          {/* Right column */}
+          {/* Right column — agent event log */}
+
           <Flex direction="column" gap="4" height="100%" overflow="hidden">
-            <Text weight="bold">Status</Text>
-            <Flex
-              ref={statusRef}
-              direction="column"
-              gap="3"
-              style={{ overflowY: "scroll", flexGrow: 1 }}
-            >
-              {isLoading && events.length === 0 ? (
-                <Skeleton>
-                  <Box height="100px" />
-                </Skeleton>
-              ) : (
-                events.map((event, i) => <EventView key={i} event={event} />)
-              )}
-            </Flex>
+            <Text size="5" weight="bold">
+              Agent log
+            </Text>
+
+            <EventLog statusRef={statusRef} events={events} />
           </Flex>
         </Grid>
       </Flex>
     </Box>
   );
-}
-
-function EventView({ event }: { event: SseEvent }) {
-  if (event.type === "start") return null;
-
-  if (event.type === "thinking")
-    return (
-      <Text size="2" style={{ whiteSpace: "pre-wrap", opacity: 0.5, fontStyle: "italic" }}>
-        {event.text}
-      </Text>
-    );
-
-  if (event.type === "text")
-    return <ReactMarkdown remarkPlugins={[remarkGfm]}>{event.text}</ReactMarkdown>;
-
-  if (event.type === "tool_use")
-    return (
-      <Flex
-        direction="column"
-        gap="1"
-        style={{ opacity: 0.6, fontFamily: "monospace", fontSize: "0.85rem" }}
-      >
-        <Text>⚙ {event.name}</Text>
-        <ToolCallDetail name={event.name} input={event.input as Record<string, unknown>} />
-      </Flex>
-    );
-
-  if (event.type === "done")
-    return (
-      <Text size="1" color="indigo">
-        {((event.duration_ms ?? 0) / 1000).toFixed(1)}s · ${(event.total_cost_usd ?? 0).toFixed(4)}
-      </Text>
-    );
-
-  if (event.type === "error") return <Text style={{ color: "red" }}>Error: {event.message}</Text>;
-}
-
-function ToolCallDetail({ name, input }: { name: string; input: Record<string, unknown> }) {
-  if (name === "WebFetch" && typeof input.url === "string")
-    return <Text style={{ paddingLeft: "1rem", opacity: 0.8 }}>{input.url}</Text>;
-
-  if (name === "Skill" && typeof input.skill === "string")
-    return <Text style={{ paddingLeft: "1rem", opacity: 0.8 }}>{input.skill}</Text>;
-
-  if (name === "TodoWrite" && Array.isArray(input.todos))
-    return (
-      <Flex direction="column" style={{ paddingLeft: "1rem" }}>
-        {(input.todos as Array<{ content: string; status?: string }>).map((todo, idx) => (
-          <Text key={idx}>
-            {todo.status === "completed" ? "✓" : "·"} {todo.content}
-          </Text>
-        ))}
-      </Flex>
-    );
-
-  if (name === "StructuredOutput")
-    return (
-      <Text style={{ paddingLeft: "1rem", opacity: 0.8 }}>
-        {JSON.stringify(input).slice(0, 1000)}…
-      </Text>
-    );
-
-  return null;
 }
