@@ -20,13 +20,8 @@ import { TodoPanel, type TodoItem } from "./TodoPanel";
 const API = import.meta.env.VITE_API_URL as string;
 
 export default function App() {
-  const [artistName, setArtistName] = useState("Omyo Cho");
-  const [sources, setSources] = useState<string[]>([
-    "https://www.omyocho.com/",
-    "https://monthlyart.com/portfolio-item/omyo-cho/",
-    "https://www.woosongallery.com/artists/93-omyo-cho/",
-    "https://art360.place/en/artists/omyo-cho/",
-  ]);
+  const [artistName, setArtistName] = useState("");
+  const [sources, setSources] = useState<string[]>(["", "", ""]);
   const [events, setEvents] = useState<SseEvent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [structuredOutput, setStructuredOutput] = useState<OutputType | null>(null);
