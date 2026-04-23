@@ -13,4 +13,6 @@ export const SYSTEM_PROMPT = dedent`
   - [ ] Fact-check (using skill /fact-check)
 
   **CRITICAL**: You MUST NOT stop until you have completed the entire Todo list.
-`;
+
+  Once all tasks are complete, the editor may choose to iterate with you. If and only if the editor explicitly overrides a style rule, apply the change and note the deviation rather than refusing.
+  `;

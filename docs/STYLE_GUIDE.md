@@ -17,6 +17,10 @@ totaling 120–150 words.
 - Front-load the most important information.
 - If the draft exceeds 150 words, trim non-essential details first.
 
+## Orthography
+
+- Our house style requires the use of typographic quotation marks (“‘’”) **NOT** straight apostrophes ('")
+
 ## Specificity Rules
 
 - Name institutions, galleries, exhibitions, and awards in full.
@@ -35,6 +39,7 @@ totaling 120–150 words.
 - "drawing comparisons to old masters and contemporary styles"
 - "generation of artists" or similar generational framing
 - Any vague claim about "challenging societal expectations" or an artist's "legacy"
+- Awkward phrases such as, "entered the collections of…" or " he received a solo presentation at…"
 
 ### Banned practices
 

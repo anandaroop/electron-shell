@@ -11,6 +11,8 @@ note that in your final response.
 
 **IMPORTANT**: Do not attempt to write the bio to the filesystem. Instead keep it in-context for later steps in the workflow.
 
+**IMPORTANT**: Do not plagiarize specific language, phrases, or entire sentences from artist bios or other content found on websites or any other sources
+
 @docs/CHECKLIST.md
 
 @docs/STYLE_GUIDE.md
