@@ -15,6 +15,7 @@ import type { SseEvent } from "../types";
 import { Result } from "./Result";
 import { ResultPlaceholder } from "./ResultPlaceholder";
 import { EventLog } from "./EventLog";
+import { TodoPanel, type TodoItem } from "./TodoPanel";
 
 const API = import.meta.env.VITE_API_URL as string;
 
@@ -29,6 +30,14 @@ export default function App() {
   const [events, setEvents] = useState<SseEvent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [structuredOutput, setStructuredOutput] = useState<OutputType | null>(null);
+
+  const lastTodoWrite = [...events]
+    .reverse()
+    .find((e) => e.type === "tool_use" && e.name === "TodoWrite");
+  const todos: TodoItem[] =
+    lastTodoWrite?.type === "tool_use"
+      ? ((lastTodoWrite.input as { todos?: TodoItem[] }).todos ?? [])
+      : [];
   const statusRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -174,6 +183,7 @@ export default function App() {
           </Flex>
         </Grid>
       </Flex>
+      <TodoPanel todos={todos} />
     </Box>
   );
 }
