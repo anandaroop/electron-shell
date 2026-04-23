@@ -11,6 +11,8 @@ import {
   Tabs,
   Text,
 } from "@radix-ui/themes";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { OutputType } from "../schema";
 
 interface ResultProps {
@@ -54,26 +56,64 @@ export const Result: React.FC<ResultProps> = (props) => {
         <Heading size="3" weight="bold">
           Biography
         </Heading>
-        <Box onClick={handleCopyBio} style={{ position: "relative", cursor: "pointer" }}>
-          <Text size="2" style={{ lineHeight: 1.7 }}>
-            {bio}
-          </Text>
-          {copied && (
-            <Text
-              size="1"
-              style={{
-                position: "absolute",
-                top: 0,
-                right: 0,
-                color: "var(--green-11)",
-                animation: "float-up-fade 1s ease-out forwards",
-                pointerEvents: "none",
-              }}
-            >
-              Copied ✓
-            </Text>
-          )}
-        </Box>
+        <Tabs.Root defaultValue="formatted">
+          <Tabs.List>
+            <Tabs.Trigger value="formatted">Formatted</Tabs.Trigger>
+            <Tabs.Trigger value="markdown">Markdown</Tabs.Trigger>
+          </Tabs.List>
+
+          <Tabs.Content value="formatted">
+            <Box onClick={handleCopyBio} style={{ position: "relative", cursor: "pointer" }} pt="3">
+              <Box
+                className="markdown-body"
+                style={{ fontSize: "var(--font-size-2)", lineHeight: 1.7 }}
+              >
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{bio}</ReactMarkdown>
+              </Box>
+              {copied && (
+                <Text
+                  size="1"
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    right: 0,
+                    color: "var(--green-11)",
+                    animation: "float-up-fade 1s ease-out forwards",
+                    pointerEvents: "none",
+                  }}
+                >
+                  Copied ✓
+                </Text>
+              )}
+            </Box>
+          </Tabs.Content>
+
+          <Tabs.Content value="markdown">
+            <Box onClick={handleCopyBio} style={{ position: "relative", cursor: "pointer" }} pt="3">
+              <Text
+                size="2"
+                style={{ lineHeight: 1.7, whiteSpace: "pre-wrap", fontFamily: "monospace" }}
+              >
+                {bio}
+              </Text>
+              {copied && (
+                <Text
+                  size="1"
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    right: 0,
+                    color: "var(--green-11)",
+                    animation: "float-up-fade 1s ease-out forwards",
+                    pointerEvents: "none",
+                  }}
+                >
+                  Copied ✓
+                </Text>
+              )}
+            </Box>
+          </Tabs.Content>
+        </Tabs.Root>
       </Flex>
 
       <Separator size="4" />
