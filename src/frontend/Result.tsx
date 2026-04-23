@@ -37,6 +37,7 @@ const reviewTypeLabel: Record<"uncertainty" | "missing_information" | "other", s
 export const Result: React.FC<ResultProps> = (props) => {
   const { structuredOutput } = props;
   const [copied, setCopied] = useState(false);
+  const [hovered, setHovered] = useState(false);
 
   if (!structuredOutput) return null;
 
@@ -56,7 +57,14 @@ export const Result: React.FC<ResultProps> = (props) => {
         <Heading size="3" weight="bold">
           Biography
         </Heading>
-        <Tabs.Root defaultValue="formatted">
+        <Tabs.Root
+          defaultValue="formatted"
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          style={{
+            background: hovered ? "var(--gray-a3)" : undefined,
+          }}
+        >
           <Tabs.List>
             <Tabs.Trigger value="formatted">Formatted</Tabs.Trigger>
             <Tabs.Trigger value="markdown">Markdown</Tabs.Trigger>
@@ -66,17 +74,18 @@ export const Result: React.FC<ResultProps> = (props) => {
             <Box onClick={handleCopyBio} style={{ position: "relative", cursor: "pointer" }} pt="3">
               <Box
                 className="markdown-body"
+                p="2"
                 style={{ fontSize: "var(--font-size-2)", lineHeight: 1.7 }}
               >
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{bio}</ReactMarkdown>
               </Box>
               {copied && (
                 <Text
-                  size="1"
+                  size="3"
                   style={{
                     position: "absolute",
-                    top: 0,
-                    right: 0,
+                    top: "-10%",
+                    right: "50%",
                     color: "var(--green-11)",
                     animation: "float-up-fade 1s ease-out forwards",
                     pointerEvents: "none",
@@ -89,7 +98,7 @@ export const Result: React.FC<ResultProps> = (props) => {
           </Tabs.Content>
 
           <Tabs.Content value="markdown">
-            <Box onClick={handleCopyBio} style={{ position: "relative", cursor: "pointer" }} pt="3">
+            <Box p="2" onClick={handleCopyBio} style={{ position: "relative", cursor: "pointer" }}>
               <Text
                 size="2"
                 style={{ lineHeight: 1.7, whiteSpace: "pre-wrap", fontFamily: "monospace" }}
@@ -98,11 +107,11 @@ export const Result: React.FC<ResultProps> = (props) => {
               </Text>
               {copied && (
                 <Text
-                  size="1"
+                  size="3"
                   style={{
                     position: "absolute",
-                    top: 0,
-                    right: 0,
+                    top: "-10%",
+                    right: "50%",
                     color: "var(--green-11)",
                     animation: "float-up-fade 1s ease-out forwards",
                     pointerEvents: "none",
